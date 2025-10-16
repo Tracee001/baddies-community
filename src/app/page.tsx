@@ -1,103 +1,153 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+
+// Example slide data
+const slides = [
+  {
+    video: "/videos/hero4.mp4",
+    title: "Empowering Women in Tech",
+    subtitle:
+      "Building a future where women of color thrive in technology and leadership.",
+    buttonText: "Join the Movement",
+    buttonLink: "/community",
+  },
+  {
+    video: "/videos/hero5.mp4",
+    title: "Connect. Learn. Grow.",
+    subtitle:
+      "From mentorship to events, we create spaces where innovation happens.",
+    buttonText: "See Events",
+    buttonLink: "/events",
+  },
+  {
+    video: "/videos/hero6.mp4",
+    title: "Together, We Rise",
+    subtitle:
+      "Celebrating diversity and driving impact through community and collaboration.",
+    buttonText: "About Us",
+    buttonLink: "/about",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="bg-white min-h-screen w-full">
+      {/* Hero Section - Full Screen */}
+      <section className="relative h-screen w-full overflow-hidden">
+        <Swiper
+          modules={[Autoplay, Pagination]}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
+          pagination={{ clickable: true }}
+          loop
+          className="h-full w-full"
+        >
+          {slides.map((slide, index) => (
+            <SwiperSlide key={index} className="relative">
+              {/* Video Background */}
+              <video
+                className="w-full h-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+              >
+                <source src={slide.video} type="video/mp4" />
+              </video>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+              {/* Text Overlay */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center bg-black/40 px-6">
+                <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 drop-shadow-lg BaddiesFont">
+                  {slide.title}
+                </h1>
+                <p className="text-lg md:text-xl text-gray-100 max-w-2xl mb-10">
+                  {slide.subtitle}
+                </p>
+                <Link
+                  href={slide.buttonLink}
+                  className="bg-pink-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-pink-700 transition shadow-lg"
+                >
+                  {slide.buttonText}
+                </Link>
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </section>
+
+      {/* Next Section - Full Width */}
+      <section className="bg-pink-100 py-16 w-full text-center CODE_SWITCH">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
+          WE DON’T CODE SWITCH…<br />WE SWITCH THE CODE
+        </h2>
+        <p className="text-lg md:text-2xl text-gray-800 max-w-3xl mx-auto mb-10">
+          Baddies in Tech is powering the potential of women of color in
+          technology. We're a career mobility platform and dedicated safe space
+          for ambitious, career-driven women who want to conquer the tech world.
+          Through access to educational and skill-building resources, networking
+          and job opportunities, we help women of color start and scale
+          successful careers in technology.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/membership"
+            className="bg-pink-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-pink-700 transition shadow-lg"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Become A Member
+          </Link>
+          <Link
+            href="/employers"
+            className="border-2 border-pink-600 text-pink-600 px-8 py-4 rounded-full font-semibold hover:bg-pink-50 transition shadow-lg"
           >
-            Read our docs
-          </a>
+            Hire Tech Baddies
+          </Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </section>
+
+      {/* Info Sections - Full Width */}
+      <section className="w-full bg-white py-20 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 px-6 md:px-12">
+        <Link
+          href="/about"
+          className="block p-8 bg-gray-100 rounded-2xl shadow hover:shadow-xl transition"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <h2 className="text-2xl font-bold mb-3 text-pink-600">About Us</h2>
+          <p className="text-gray-700">
+            Learn more about our mission and story.
+          </p>
+        </Link>
+
+        <Link
+          href="/events"
+          className="block p-8 bg-gray-100 rounded-2xl shadow hover:shadow-xl transition"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <h2 className="text-2xl font-bold mb-3 text-pink-600">Events</h2>
+          <p className="text-gray-700">
+            See upcoming events and workshops.
+          </p>
+        </Link>
+
+        <Link
+          href="/community"
+          className="block p-8 bg-gray-100 rounded-2xl shadow hover:shadow-xl transition"
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <h2 className="text-2xl font-bold mb-3 text-pink-600">Community</h2>
+          <p className="text-gray-700">
+            Connect with other baddies in tech.
+          </p>
+        </Link>
+
+        <Link
+          href="/contact"
+          className="block p-8 bg-gray-100 rounded-2xl shadow hover:shadow-xl transition"
+        >
+          <h2 className="text-2xl font-bold mb-3 text-pink-600">Contact</h2>
+          <p className="text-gray-700">Get in touch with us.</p>
+        </Link>
+      </section>
+    </main>
   );
 }

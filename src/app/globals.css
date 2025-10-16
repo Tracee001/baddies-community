@@ -1,26 +1,36 @@
 @import "tailwindcss";
+@import "swiper/css";
+@import "swiper/css/pagination";
+@import "swiper/css/navigation";
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libertinus+Serif+Display&family=Pacifico&display=swap');
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+
+.BaddiesFont {
+  font-family: "Pacifico", cursive;
+  font-weight: 400;
+  font-style: normal;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.pacifico-regular {
+  font-family: "Pacifico", cursive;
+  font-weight: 400;
+  font-style: normal;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.CODE_SWITCH {
+  font-family: "Pacifico", cursive;
+  font-weight: 400;
+  font-style: normal;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
+.libertinus-serif-display-regular {
+  font-family: "Libertinus Serif Display", system-ui;
+  font-weight: 400;
+  font-style: normal;
 }
+
+

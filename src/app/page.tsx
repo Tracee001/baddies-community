@@ -85,13 +85,14 @@ export default function Home() {
           WE DON’T CODE SWITCH…<br />WE SWITCH THE CODE
         </h2>
         <p className="text-lg md:text-2xl text-gray-800 max-w-3xl mx-auto mb-10">
-          Baddies in Tech is powering the potential of women of color in
-          technology. We're a career mobility platform and dedicated safe space
-          for ambitious, career-driven women who want to conquer the tech world.
-          Through access to educational and skill-building resources, networking
-          and job opportunities, we help women of color start and scale
-          successful careers in technology.
-        </p>
+  Baddies in Tech is powering the potential of women of color in
+  technology. We&apos;re a career mobility platform and dedicated safe space
+  for ambitious, career-driven women who want to conquer the tech world.
+  Through access to educational and skill-building resources, networking
+  and job opportunities, we help women of color start and scale
+  successful careers in technology.
+</p>
+
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/membership"

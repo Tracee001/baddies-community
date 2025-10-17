@@ -9,6 +9,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  Timestamp, // 1. Imported Timestamp type
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { format } from "date-fns";
@@ -18,7 +19,7 @@ interface Message {
   senderName: string;
   senderEmail: string;
   text: string;
-  createdAt?: any;
+  createdAt?: Timestamp; // 2. Fixed the 'any' error
 }
 
 const fadeUp = {
@@ -38,6 +39,7 @@ export default function CommunityPage() {
   useEffect(() => {
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      // TypeScript: Cast the result from doc.data() to the correct Message[] shape.
       const msgs = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -145,6 +147,7 @@ export default function CommunityPage() {
                         </p>
                       )}
                       <p className="text-sm">{msg.text}</p>
+                      {/* Check that createdAt exists and has the toDate method (which Timestamp does) */}
                       {msg.createdAt?.toDate && (
                         <p
                           className={`text-[10px] mt-1 ${

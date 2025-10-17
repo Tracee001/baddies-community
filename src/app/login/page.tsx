@@ -17,11 +17,7 @@ const fadeUp = {
 
 export default function LoginPage() {
   const router = useRouter();
-
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [firebaseReady, setFirebaseReady] = useState(false);
@@ -35,7 +31,7 @@ export default function LoginPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
@@ -46,21 +42,22 @@ export default function LoginPage() {
       return setError("Firebase is not ready yet. Please try again.");
 
     try {
-      // ✅ Keep user logged in
       await setPersistence(auth, browserLocalPersistence);
-
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
       setSuccess(true);
       setTimeout(() => router.push("/community"), 1500);
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error(err.message);
+      } else {
+        console.error(err);
+      }
       setError("Invalid email or password. Please try again.");
     }
   };
 
   return (
     <main className="min-h-screen bg-white text-gray-900">
-      {/* Hero Section */}
       <section className="relative h-96 flex items-center justify-center bg-pink-600 text-white">
         <motion.h1
           initial="hidden"
@@ -73,7 +70,6 @@ export default function LoginPage() {
         </motion.h1>
       </section>
 
-      {/* Form Section */}
       <section className="py-16 px-6 max-w-md mx-auto">
         <motion.h2
           initial="hidden"
@@ -89,26 +85,13 @@ export default function LoginPage() {
           onSubmit={handleSubmit}
           className="space-y-6 bg-gray-50 p-8 rounded-xl shadow-md"
         >
-          {error && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-red-600 font-medium"
-            >
-              {error}
-            </motion.p>
-          )}
+          {error && <p className="text-red-600 font-medium">{error}</p>}
           {success && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-green-600 font-medium"
-            >
+            <p className="text-green-600 font-medium">
               ✅ Login successful! Redirecting...
-            </motion.p>
+            </p>
           )}
 
-          {/* Email */}
           <div>
             <label className="block font-semibold">Email</label>
             <input
@@ -122,7 +105,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Password */}
           <div>
             <label className="block font-semibold">Password</label>
             <div className="relative">
@@ -145,7 +127,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={!firebaseReady}
@@ -158,13 +139,9 @@ export default function LoginPage() {
             {firebaseReady ? "Login" : "Loading..."}
           </button>
 
-          {/* Link */}
           <p className="text-center text-gray-600 mt-4">
             Don’t have an account?{" "}
-            <a
-              href="/join"
-              className="text-pink-600 font-semibold hover:underline"
-            >
+            <a href="/join" className="text-pink-600 font-semibold hover:underline">
               Join Now
             </a>
           </p>
@@ -173,4 +150,3 @@ export default function LoginPage() {
     </main>
   );
 }
-

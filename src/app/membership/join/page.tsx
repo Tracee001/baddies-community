@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import type { FirebaseError } from "firebase/app";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -28,7 +29,9 @@ export default function JoinPage() {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -53,7 +56,7 @@ export default function JoinPage() {
         formData.password
       );
 
-      // ✅ Save user data to Firestore with UID as the doc ID
+      // ✅ Save user data to Firestore
       await setDoc(doc(db, "members", userCredential.user.uid), {
         uid: userCredential.user.uid,
         name: formData.name,
@@ -66,8 +69,9 @@ export default function JoinPage() {
 
       setSuccess(true);
       setTimeout(() => router.push("/community"), 1500);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      const error = err as FirebaseError;
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -202,7 +206,9 @@ export default function JoinPage() {
             type="submit"
             disabled={loading}
             className={`w-full py-3 text-white font-bold rounded-lg transition ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-pink-600 hover:bg-pink-700"
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-pink-600 hover:bg-pink-700"
             }`}
           >
             {loading ? "Creating account..." : "Join Now"}

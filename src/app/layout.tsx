@@ -1,3 +1,6 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -21,15 +24,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  const pathname = usePathname();
+
+  // ✅ Check if we’re on the Community page
+  const hideFooter = pathname === "/community";
+
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-pink-100 text-black`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-pink-100 text-black`}
+      >
         <Header />
-        <main className=" mx-auto pb-8">{children}</main>
-        <Footer />
+        <main className="mx-auto pb-8">{children}</main>
+        {!hideFooter && <Footer />} {/* ✅ Hide footer only on /community */}
       </body>
     </html>
   );

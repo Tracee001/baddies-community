@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   collection,
   addDoc,
@@ -9,7 +9,10 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  Timestamp, // 1. Imported Timestamp type
+  setDoc,
+  doc,
+  deleteDoc,
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { format } from "date-fns";
@@ -19,43 +22,60 @@ interface Message {
   senderName: string;
   senderEmail: string;
   text: string;
-  createdAt?: Timestamp; // 2. Fixed the 'any' error
+  createdAt?: Timestamp;
 }
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0 },
-};
+interface TypingUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+const getAvatar = (name: string) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    name || "User"
+  )}&background=F472B6&color=fff&bold=true`;
 
 export default function CommunityPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 🔥 Real-time listener
+  // Listen for messages
   useEffect(() => {
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      // TypeScript: Cast the result from doc.data() to the correct Message[] shape.
       const msgs = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Message[];
       setMessages(msgs);
-      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  // 🪄 Auto-scroll to the bottom when messages update
+  // ✅ Fixed Typing Users Listener
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "typing"), (snapshot) => {
+      const typingList = snapshot.docs.map((doc) => {
+        const data = doc.data() as Omit<TypingUser, "id">;
+        return { id: doc.id, ...data };
+      });
+      setTypingUsers(typingList);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Auto-scroll when new messages appear
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ✉️ Send new message
+  // Send message
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !name.trim() || !email.trim()) return;
@@ -68,121 +88,144 @@ export default function CommunityPage() {
     });
 
     setNewMessage("");
+    await deleteDoc(doc(db, "typing", email)).catch(() => {});
   };
 
+  // Handle typing status
+  const handleTyping = async (value: string) => {
+    setNewMessage(value);
+
+    if (!name.trim() || !email.trim()) return;
+
+    // User starts typing
+    await setDoc(doc(db, "typing", email), {
+      id: email,
+      name,
+      email,
+    });
+
+    // Clear after 2 seconds of no input
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(
+      async () => await deleteDoc(doc(db, "typing", email)).catch(() => {}),
+      2000
+    );
+  };
+
+  const othersTyping = typingUsers.filter((user) => user.email !== email);
+
   return (
-    <main className="min-h-screen bg-gray-50 text-gray-900">
-      {/* Hero Section */}
-      <section className="relative h-64 flex items-center justify-center bg-pink-600 text-white">
-        <motion.h1
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
-          transition={{ duration: 1 }}
-          className="text-4xl md:text-5xl font-extrabold"
-        >
-          💬 Baddies Community Chat
-        </motion.h1>
-      </section>
+    <main className="flex flex-col h-screen bg-gradient-to-b from-pink-50 to-white text-gray-900">
+      {/* Header */}
+      <header className="bg-pink-600 text-white py-4 px-6 flex justify-between items-center shadow-md sticky top-0 z-10">
+        <h1 className="text-xl font-semibold">💬 Baddies Community Chat</h1>
+        <div className="flex gap-3 text-sm">
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="px-2 py-1 rounded bg-white text-gray-800 outline-none"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="px-2 py-1 rounded bg-white text-gray-800 outline-none"
+          />
+        </div>
+      </header>
 
-      {/* Chat Section */}
-      <section className="py-10 px-6 max-w-3xl mx-auto">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
-          transition={{ duration: 0.8 }}
-          className="bg-white rounded-2xl shadow-lg p-6"
-        >
-          <h2 className="text-2xl font-bold text-pink-600 mb-4">
-            Chat Room 💖
-          </h2>
-
-          {/* User Info */}
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <input
-              type="text"
-              placeholder="Your Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-pink-500"
-            />
-            <input
-              type="email"
-              placeholder="Your Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-pink-500"
-            />
-          </div>
-
-          {/* Chat Messages */}
-          <div className="h-96 overflow-y-auto border rounded-lg p-4 bg-gray-50 mb-4">
-            {loading ? (
-              <p className="text-gray-500 text-center">Loading chat...</p>
-            ) : messages.length === 0 ? (
-              <p className="text-gray-500 text-center">
-                No messages yet. Start chatting!
-              </p>
-            ) : (
-              messages.map((msg) => {
-                const isMe = msg.senderEmail === email;
-                return (
-                  <div
-                    key={msg.id}
-                    className={`mb-3 flex ${
-                      isMe ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <div
-                      className={`max-w-xs md:max-w-sm rounded-lg p-3 shadow-sm ${
-                        isMe
-                          ? "bg-pink-600 text-white rounded-br-none"
-                          : "bg-gray-200 text-gray-900 rounded-bl-none"
-                      }`}
+      {/* Chat */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+        {messages.length === 0 ? (
+          <p className="text-center text-gray-500 mt-10">
+            No messages yet. Start chatting 💬
+          </p>
+        ) : (
+          messages.map((msg) => {
+            const isMe = msg.senderEmail === email;
+            return (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className={`flex items-end gap-2 ${
+                  isMe ? "justify-end flex-row-reverse" : "justify-start"
+                }`}
+              >
+                <img
+                  src={getAvatar(msg.senderName)}
+                  alt={msg.senderName}
+                  className="w-8 h-8 rounded-full object-cover border border-pink-200"
+                />
+                <div
+                  className={`max-w-xs md:max-w-sm rounded-2xl px-4 py-2 shadow-sm ${
+                    isMe
+                      ? "bg-pink-600 text-white rounded-br-none"
+                      : "bg-gray-200 text-gray-800 rounded-bl-none"
+                  }`}
+                >
+                  {!isMe && (
+                    <p className="text-xs font-semibold mb-1">
+                      {msg.senderName}
+                    </p>
+                  )}
+                  <p className="text-sm break-words">{msg.text}</p>
+                  {msg.createdAt?.toDate && (
+                    <p
+                      className={`text-[10px] mt-1 ${
+                        isMe ? "text-pink-100" : "text-gray-500"
+                      } text-right`}
                     >
-                      {!isMe && (
-                        <p className="text-xs font-semibold text-gray-700 mb-1">
-                          {msg.senderName}
-                        </p>
-                      )}
-                      <p className="text-sm">{msg.text}</p>
-                      {/* Check that createdAt exists and has the toDate method (which Timestamp does) */}
-                      {msg.createdAt?.toDate && (
-                        <p
-                          className={`text-[10px] mt-1 ${
-                            isMe ? "text-pink-100" : "text-gray-500"
-                          } text-right`}
-                        >
-                          {format(msg.createdAt.toDate(), "h:mm a")}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-            <div ref={bottomRef} />
-          </div>
+                      {format(msg.createdAt.toDate(), "h:mm a")}
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })
+        )}
 
-          {/* Send Message */}
-          <form onSubmit={sendMessage} className="flex gap-3">
-            <input
-              type="text"
-              placeholder="Type your message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              className="flex-1 px-4 py-2 border rounded-lg focus:ring-pink-500"
-            />
-            <button
-              type="submit"
-              className="px-5 py-2 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-700 transition"
+        {/* Typing Indicator */}
+        <AnimatePresence>
+          {othersTyping.length > 0 && (
+            <motion.p
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 5 }}
+              className="text-xs text-gray-500 italic mt-2 ml-10"
             >
-              Send
-            </button>
-          </form>
-        </motion.div>
-      </section>
+              💬 {othersTyping.map((u) => u.name).join(", ")}{" "}
+              {othersTyping.length === 1 ? "is typing..." : "are typing..."}
+            </motion.p>
+          )}
+        </AnimatePresence>
+
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <form
+        onSubmit={sendMessage}
+        className="bg-white border-t border-gray-200 p-4 flex gap-3 sticky bottom-0"
+      >
+        <input
+          type="text"
+          placeholder="Type a message..."
+          value={newMessage}
+          onChange={(e) => handleTyping(e.target.value)}
+          className="flex-1 px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-pink-400 outline-none"
+        />
+        <button
+          type="submit"
+          className="bg-pink-600 text-white px-5 py-2 rounded-full font-medium hover:bg-pink-700 transition"
+        >
+          Send
+        </button>
+      </form>
     </main>
   );
 }
